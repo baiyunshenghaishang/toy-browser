@@ -1,5 +1,5 @@
 const net = require('net')
-
+const { parserHTML } = require('./parser')
 class Request {
     // method, url = host + port + path
     // body
@@ -62,7 +62,7 @@ ${this.bodyText}`
             })
             connection.on('error', (error) => {
                 reject(error)
-                client.end()
+                connection.end()
             })
         })
     }
@@ -178,8 +178,8 @@ class ChunkedBodyParser {
                     this.isFinished = true
                 }
             } else {
-                this.length *= 10
-                this.length += char.charCodeAt(0) - '0'.charCodeAt(0)
+                this.length *= 16
+                this.length += parseInt(char, 16)
             }
         } else if (this.current === this.WAITING_LENGTH_LINE_END) {
             if (char === '\n') {
@@ -217,37 +217,6 @@ void (async function () {
         },
     })
     let response = await request.send()
-    console.log(response)
+    const html = parserHTML(response.body)
+    console.log(html)
 })()
-
-// const client = net.createConnection({ host: '127.0.0.1', port: 8080 }, () => {
-//     // 'connect' 监听器
-//     console.log('已连接到服务器')
-//     let request = new Request({
-//         method: 'POST',
-//         host: '127.0.0.1',
-//         port: '8080',
-//         path: '/',
-//         headers: {
-//             'X-Foo2': 'customed',
-//         },
-//         body: {
-//             name: 'huangzhen',
-//         },
-//     })
-//     console.log(request.toString())
-//     client.write(request.toString())
-// })
-// client.on('data', (data) => {
-//     console.log('receive data')
-//     console.log(data.toString())
-//     client.end()
-// })
-// client.on('error', (error) => {
-//     console.log('error')
-//     console.log(error.toString())
-//     client.end()
-// })
-// client.on('end', () => {
-//     console.log('已从服务器断开')
-// })
