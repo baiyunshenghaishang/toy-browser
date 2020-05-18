@@ -1,4 +1,7 @@
-let currentToken = null,
+const { addCSSRules, computeCSS } = require('./css')
+
+let rules = [],
+    currentToken = null,
     currentAttribute = null,
     currentTextNode = null,
     stack = [
@@ -11,6 +14,7 @@ let currentToken = null,
 const EOF = Symbol('EOF')
 
 function emit(token) {
+    let top = stack[stack.length - 1]
     if (token.type === 'startTag') {
         let el = {
             type: 'element',
@@ -18,10 +22,10 @@ function emit(token) {
             attributes: [],
             children: [],
         }
-        stack[stack.length - 1].children.push(el)
-        if (!token.isSelfClosing) {
-            stack.push(el)
-        }
+
+        top.children.push(el)
+        stack.push(el)
+
         for (let key in token) {
             if (!['type', 'isSelfClosing', 'tagName'].includes(key)) {
                 el.attributes.push({
@@ -30,10 +34,18 @@ function emit(token) {
                 })
             }
         }
+        computeCSS(stack, rules)
+        if (token.isSelfClosing) {
+            stack.pop()
+        }
+
         currentTextNode = null
     } else if (token.type === 'endTag') {
-        if (stack[stack.length - 1].tagName != token.tagName) {
+        if (top.tagName != token.tagName) {
             throw new Error('标签不匹配', token.tagName)
+        }
+        if (token.tagName === 'style') {
+            rules = addCSSRules(top.children[0].value)
         }
         stack.pop()
         currentTextNode = null
@@ -43,7 +55,7 @@ function emit(token) {
                 type: 'text',
                 value: '',
             }
-            stack[stack.length - 1].children.push(currentTextNode)
+            top.children.push(currentTextNode)
         }
         currentTextNode.value += token.value
     }
