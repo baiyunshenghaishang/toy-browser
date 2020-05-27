@@ -1,4 +1,6 @@
 const http = require('http')
+const fs = require('fs')
+const data = fs.readFileSync('./index.html')
 
 const server = http.createServer((req, res) => {
     console.log('request received')
@@ -6,32 +8,7 @@ const server = http.createServer((req, res) => {
     res.setHeader('Content-Type', 'text/html')
     res.setHeader('X-Foo', 'bar')
     res.writeHead(200, { 'Content-type': 'text/plain' })
-    res.end(`<html maaa=a >
-    <head>
-        <style>
-    body div #myid{
-        width:100px;
-        background-color: #ff5000;
-    }
-    body div img{
-        width:30px;
-        background-color: #ff1111;
-    }
-    body div img {
-        width: 50px;
-    }
-    body img{
-        background-color:#fff;
-    }
-        </style>
-    </head>
-    <body>
-        <div>
-            <img id="myid"/>
-            <img/>
-        </div>
-    </body>
-    </html>`)
+    res.end(data.toString())
 })
 
 server.listen(8080)

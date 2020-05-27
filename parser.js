@@ -1,4 +1,5 @@
 const { addCSSRules, computeCSS } = require('./css')
+const { layout } = require('./layout')
 
 let rules = [],
     currentToken = null,
@@ -47,6 +48,7 @@ function emit(token) {
         if (token.tagName === 'style') {
             rules = addCSSRules(top.children[0].value)
         }
+        layout(stack[stack.length - 1])
         stack.pop()
         currentTextNode = null
     } else if (token.type == 'text') {
@@ -238,5 +240,5 @@ module.exports.parserHTML = function parseRHTML(html) {
         state = state(c)
     }
     state = state(EOF)
-    console.log(JSON.stringify(stack[0].children))
+    return stack[0]
 }
